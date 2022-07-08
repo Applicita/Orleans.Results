@@ -61,7 +61,7 @@ public class Result<TErrorCode> where TErrorCode : Enum
 
     public string ErrorsText => string.Join(Environment.NewLine, Errors);
 
-    /// <remarks>Intended for use with  or </remarks>
+    /// <remarks>Intended for use with <see cref="AspNetCore.Mvc.ValidationProblemDetails"/> (in controllers) or <see cref="AspNetCore.Http.ValidationProblem"/> (in minimal api's) </remarks>
     public Dictionary<string, string[]> ValidationErrors => new(
         Errors.GroupBy(error => error.Code, error => error.Message)
               .Select(group => new KeyValuePair<string, string[]>($"Error {group.Key}", group.ToArray())));
