@@ -24,11 +24,5 @@ public static class ResultExtensions
      => new NotFoundObjectResult(result.ErrorsText);
 
     public static ActionResult BadRequest<TErrorCode>(this Result<TErrorCode> result) where TErrorCode : Enum
-     => new BadRequestObjectResult(new ValidationProblemDetails(new Dictionary<string, string[]>(result.Errors
-            .GroupBy(error => error.Code, error => error.Message)
-            .Select(group => new KeyValuePair<string, string[]>($"Error {group.Key}", group.ToArray()))
-        )));
-
-    public static NotImplementedException UnhandledErrorException<TErrorCode>(this Result<TErrorCode> result) where TErrorCode : Enum
-        => new("Unhandled error(s): " + result.ErrorsText);
+     => new BadRequestObjectResult(new ValidationProblemDetails(result.ValidationErrors));
 }
