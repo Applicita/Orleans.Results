@@ -1,5 +1,9 @@
 # Orleans.Results
-Concise, version-tolerant result pattern implementation for [Microsoft Orleans 4](https://github.com/dotnet/orleans/releases/tag/v4.0.0-preview1). Immutable and performant.
+Concise, version-tolerant result pattern implementation for [Microsoft Orleans 4](https://github.com/dotnet/orleans/releases/tag/v4.0.0-preview1).
+
+The result pattern solves a common problem: it returns an object indicating success or failure of an operation instead of throwing/using exceptions.
+
+This implementation leverages [immutability in Orleans](https://github.com/dotnet/orleans/blob/b7bb116ba4f98b64428d449d26f20ea37d3501b6/src/Orleans.Serialization.Abstractions/Annotations.cs#L430) to optimize performance.
 
 ## Usage
 
