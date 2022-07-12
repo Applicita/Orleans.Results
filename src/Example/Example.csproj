@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -8,10 +8,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\ErrorCode.cs" Link="Orleans.Results\ErrorCode.cs" />
+    <Compile Include="..\Result.cs" Link="Orleans.Results\Result.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Orleans.OrleansRuntime" Version="4.0.0-preview1" />
     <PackageReference Include="Microsoft.Orleans.Persistence.Memory" Version="4.0.0-preview1" />
     <PackageReference Include="Microsoft.Orleans.Sdk" Version="4.0.0-preview1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Orleans.Results\" />
   </ItemGroup>
 
 </Project>

@@ -23,7 +23,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     _ = app.UseSwagger()
-           .UseSwaggerUI();
+           .UseSwaggerUI(options => options.EnableTryItOutByDefault());
 }
 
 app.MapGet("minimalapis/users/{id}", async (IClusterClient client, int id)
