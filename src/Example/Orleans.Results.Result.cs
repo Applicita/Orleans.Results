@@ -88,7 +88,8 @@ public abstract class ResultBase<TErrorCode> where TErrorCode : Enum
 
     public string ErrorsText => string.Join(Environment.NewLine, Errors);
 
-    /// <remarks>Intended for use with <see cref="AspNetCore.Mvc.ValidationProblemDetails"/> (in controllers) or <see cref="AspNetCore.Http.ValidationProblem"/> (in minimal api's) </remarks>
+    /// <remarks>Intended for use with <see cref="Microsoft.AspNetCore.Mvc.ValidationProblemDetails"/> (in controllers) or <see cref="Microsoft.AspNetCore.Http.Results.ValidationProblem"/> (in minimal api's) </remarks>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0001:Simplify Names", Justification = "Full name is necessary to ensure link works independently of global usings")]
     public Dictionary<string, string[]> ValidationErrors => new(
         Errors.GroupBy(error => error.Code, error => error.Message)
               .Select(group => new KeyValuePair<string, string[]>($"Error {group.Key}", group.ToArray())));
