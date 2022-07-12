@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1998</NoWarn> <!-- In projects that implement Orleans grains, all grain methods must return Task but many may not actually be async -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Orleans.OrleansRuntime" Version="4.0.0-preview1" />
+    <PackageReference Include="Microsoft.Orleans.Persistence.Memory" Version="4.0.0-preview1" />
+    <PackageReference Include="Microsoft.Orleans.Sdk" Version="4.0.0-preview1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.1" />
+  </ItemGroup>
+
+</Project>
