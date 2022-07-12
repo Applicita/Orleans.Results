@@ -1,7 +1,7 @@
 # Orleans.Results
-Concise version-tolerant result pattern implementation for [Microsoft Orleans 4](https://github.com/dotnet/orleans/releases/tag/v4.0.0-preview1).
+Concise, version-tolerant result pattern implementation for [Microsoft Orleans 4](https://github.com/dotnet/orleans/releases/tag/v4.0.0-preview1). Immutable and performant.
 
-## Usage?
+## Usage
 
 Define error codes:
 ```csharp
