@@ -1,5 +1,5 @@
 # Orleans.Results
-Concise result pattern implementation for [Microsoft Orleans 4](https://github.com/dotnet/orleans/releases/tag/v4.0.0-preview1)
+Concise version-tolerant result pattern implementation for [Microsoft Orleans 4](https://github.com/dotnet/orleans/releases/tag/v4.0.0-preview1).
 
 ## Usage?
 
@@ -12,7 +12,14 @@ public enum ErrorCode
 ```
 > Note that this enum is used to define convenience classes:<br />`Result : ResultBase<ErrorCode>` and `Result<T> : ResultBase<ErrorCode, T>`<br />These classes save you from having to specify `<ErrorCode>` in every grain method signature
 
-ASP.NET Core minimal API's:
+Grain contract:
+```csharp
+interface ITenant : IGrainWithStringKey
+{
+    Task<Result<string>> GetUser(int id);
+}
+```
+Use in ASP.NET Core minimal API's:
 ```csharp
 app.MapGet("minimalapis/users/{id}", async (IClusterClient client, int id)
     => await client.GetGrain<ITenant>("").GetUser(id) switch
@@ -23,7 +30,7 @@ app.MapGet("minimalapis/users/{id}", async (IClusterClient client, int id)
     }
 );
 ```
-ASP.NET Core MVC:
+Use in ASP.NET Core MVC:
 ```csharp
 [HttpGet("mvc/users/{id}")]
 public async Task<ActionResult<string>> GetUser(int id)
@@ -33,13 +40,6 @@ public async Task<ActionResult<string>> GetUser(int id)
     { ErrorCode: ErrorCode.UserNotFound } r => NotFound(r.ErrorsText),
     {                                   } r => throw r.UnhandledErrorException()
 };
-```
-Grain contract:
-```csharp
-interface ITenant : IGrainWithStringKey
-{
-    Task<Result<string>> GetUser(int id);
-}
 ```
 Grain implementation:
 ```csharp
@@ -63,6 +63,17 @@ The `Result` convenience classes have implicit convertors to allow concise assig
     Result<string> r2 = "Hi";
     Result<string> r3 = (ErrorCode.UserNotFound, $"User {id} not found");
 ```
+The `With` methods allow you to specify multiple errors in a result:
+```csharp
+    Result<string> r = ErrorCode.AnError;
+    var r2 = r
+        .With(ErrorCode.AnotherError)
+        .With(ErrorCode.YetAnotherError, "This is the 3rd error");
+```
+The `ValidationErrors` property is convenient to for use with [ValidationProblemDetails](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.validationproblemdetails?view=aspnetcore-6.0) (in MVC):<br>
+`r => ValidationProblem(new ValidationProblemDetails(r.ValidationErrors))`<br />
+and for [Results.ValidationProblem](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.results.validationproblem?view=aspnetcore-6.0) (in minimal API's):<br />
+`r => Results.ValidationProblem(r.ValidationErrors)`
 
 The [example in the repo](https://github.com/Applicita/Orleans.Results/tree/main/src/Example) demonstrates using Orleans.Results with both ASP.NET Core minimal API's and MVC
 
