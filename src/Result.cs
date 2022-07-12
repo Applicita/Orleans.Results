@@ -1,8 +1,6 @@
-﻿// TODO: This file was added with, version etc
-// dotnet new update Applicita.Orleans.Templates
-// dotnet new OrleansResults
-
-// There should be no need to edit this file manually
+﻿// Version: 1.0.0-preview.1 (Using https://semver.org/)
+// Updated: 2022-06-12
+// See https://github.com/Applicita/Orleans.Results for updates to this file.
 
 using System.Collections.Immutable;
 using Orleans;
