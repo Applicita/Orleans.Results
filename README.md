@@ -82,9 +82,18 @@ and for [Results.ValidationProblem](https://docs.microsoft.com/en-us/dotnet/api/
 The [example in the repo](https://github.com/Applicita/Orleans.Results/tree/main/src/Example) demonstrates using Orleans.Results with both ASP.NET Core minimal API's and MVC
 
 ## How do I get it?
-1) Copy [ErrorCode.cs](https://github.com/Applicita/Orleans.Results/blob/main/src/ErrorCode.cs) and [Result.cs](https://github.com/Applicita/Orleans.Results/blob/main/src/Result.cs) from this repo into a project that contains grain interfaces (or that is referenced by projects that contain grain interfaces).
-2) Update the `Example` namespace to match your project
-3) Edit the `ErrorCode` enum to define error codes
+1) On the command line, ensure that the template is installed:
+    ```
+    dotnet new -install Modern.CSharp.Templates
+    ```
+2) In or below the project folder that contains grain interfaces (or that is referenced by projects that contain grain interfaces), type:
+    ```
+    dotnet new mcs-orleans-results
+    ```
+    This will add the [ErrorCode.cs](https://github.com/Applicita/Orleans.Results/blob/main/src/ErrorCode.cs) and [Result.cs](https://github.com/Applicita/Orleans.Results/blob/main/src/Result.cs) files there (if you prefer, you can copy the files there manually)
+
+3) Update the `Example` namespace in the added files to match your project
+4) Edit the `ErrorCode` enum to define error codes
 
 ## Why?
 The result pattern solves a common problem: it returns an object indicating success or failure of an operation instead of throwing/using exceptions.
