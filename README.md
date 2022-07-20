@@ -84,7 +84,7 @@ The [example in the repo](https://github.com/Applicita/Orleans.Results/tree/main
 ## How do I get it?
 1) On the command line, ensure that the template is installed:
     ```
-    dotnet new -install Modern.CSharp.Templates
+    dotnet new --install Modern.CSharp.Templates
     ```
 2) In or below the project folder that contains grain interfaces (or that is referenced by projects that contain grain interfaces), type:
     ```
