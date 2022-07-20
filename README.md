@@ -1,4 +1,4 @@
-# Orleans.Results
+# ![C Sharp Toolkit Icon](CSharp-Toolkit-Icon.png) Orleans.Results
 Concise, version-tolerant result pattern implementation for [Microsoft Orleans 4](https://github.com/dotnet/orleans/releases/tag/v4.0.0-preview1).
 
 The result pattern solves a common problem: it returns an object indicating success or failure of an operation instead of throwing/using exceptions (see [why](#why) below).
