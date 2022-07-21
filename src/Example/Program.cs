@@ -3,6 +3,7 @@ using Orleans.Hosting;
 using Orleans.Runtime;
 using Example;
 using ErrorCode = Example.ErrorCode;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +16,7 @@ builder.Host.UseOrleans(silo => silo
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options => options.SwaggerDoc("v1", new OpenApiInfo { Title = "Example API with Orleans.Results for Orleans 4" }));
 
 var app = builder.Build();
 

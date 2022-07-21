@@ -83,8 +83,8 @@ and for [Results.ValidationProblem](https://docs.microsoft.com/en-us/dotnet/api/
 ```csharp
 r => Results.ValidationProblem(r.ValidationErrors)
 ```
-The [example in the repo](https://github.com/Applicita/Orleans.Results/tree/main/src/Example) demonstrates using Orleans.Results with both ASP.NET Core minimal API's and MVC
-
+The [example in the repo](https://github.com/Applicita/Orleans.Results/tree/main/src/Example) demonstrates using Orleans.Results with both ASP.NET Core minimal API's and MVC:
+![Orleans Results Example](Orleans-Results-Example.png)
 ## How do I get it?
 1) On the command line, ensure that the [template](https://github.com/Applicita/Modern.CSharp.Templates) is installed:
     ```
