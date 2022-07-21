@@ -1,4 +1,4 @@
-# ![C Sharp Toolkit Icon](CSharp-Toolkit-Icon.png) Orleans.Results
+# <img src="CSharp-Toolkit-Icon.png" alt="C# Toolkit" width="64px" /> Orleans.Results
 Concise, version-tolerant result pattern implementation for [Microsoft Orleans 4](https://github.com/dotnet/orleans/releases/tag/v4.0.0-preview1).
 
 The result pattern solves a common problem: it returns an object indicating success or failure of an operation instead of throwing/using exceptions (see [why](#why) below).
@@ -26,7 +26,7 @@ interface ITenant : IGrainWithStringKey
 Use in ASP.NET Core minimal API's:
 ```csharp
 app.MapGet("minimalapis/users/{id}", async (IClusterClient client, int id)
-    => await client.GetGrain<ITenant>("").GetUser(id) switch
+ => await client.GetGrain<ITenant>("").GetUser(id) switch
     {
         { IsSuccess: true                   } r => Results.Ok(r.Value),
         { ErrorCode: ErrorCode.UserNotFound } r => Results.NotFound(r.ErrorsText),
@@ -38,21 +38,22 @@ Use in ASP.NET Core MVC:
 ```csharp
 [HttpGet("mvc/users/{id}")]
 public async Task<ActionResult<string>> GetUser(int id)
-=> await orleans.GetGrain<ITenant>("").GetUser(id) switch
-{
-    { IsSuccess: true                   } r => Ok(r.Value),
-    { ErrorCode: ErrorCode.UserNotFound } r => NotFound(r.ErrorsText),
-    {                                   } r => throw r.UnhandledErrorException()
-};
+ => await client.GetGrain<ITenant>("").GetUser(id) switch
+    {
+        { IsSuccess: true                   } r => Ok(r.Value),
+        { ErrorCode: ErrorCode.UserNotFound } r => NotFound(r.ErrorsText),
+        {                                   } r => throw r.UnhandledErrorException()
+    };
 ```
 Grain implementation:
 ```csharp
 class Tenant : Grain, ITenant
 {
-    public async Task<Result<string>> GetUser(int id)
-     => id >= 0 && id < S.Users.Count ?
+    public Task<Result<string>> GetUser(int id) => Task.FromResult<Result<string>>(
+        id >= 0 && id < S.Users.Count ?
             S.Users[id] :
-            Errors.UserNotFound(id); 
+            Errors.UserNotFound(id)
+    );
 }
 
 static class Errors
@@ -75,14 +76,17 @@ The `With` methods allow you to specify multiple errors in a result:
         .With(ErrorCode.YetAnotherError, "This is the 3rd error");
 ```
 The `ValidationErrors` property is convenient to for use with [ValidationProblemDetails](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.validationproblemdetails?view=aspnetcore-6.0) (in MVC):<br>
-`r => ValidationProblem(new ValidationProblemDetails(r.ValidationErrors))`<br />
-and for [Results.ValidationProblem](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.results.validationproblem?view=aspnetcore-6.0) (in minimal API's):<br />
-`r => Results.ValidationProblem(r.ValidationErrors)`
-
+```csharp
+r => ValidationProblem(new ValidationProblemDetails(r.ValidationErrors))
+```
+and for [Results.ValidationProblem](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.results.validationproblem?view=aspnetcore-6.0) (in minimal API's):
+```csharp
+r => Results.ValidationProblem(r.ValidationErrors)
+```
 The [example in the repo](https://github.com/Applicita/Orleans.Results/tree/main/src/Example) demonstrates using Orleans.Results with both ASP.NET Core minimal API's and MVC
 
 ## How do I get it?
-1) On the command line, ensure that the template is installed:
+1) On the command line, ensure that the [template](https://github.com/Applicita/Modern.CSharp.Templates) is installed:
     ```
     dotnet new --install Modern.CSharp.Templates
     ```

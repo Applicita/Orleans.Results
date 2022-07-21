@@ -27,7 +27,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapGet("minimalapis/users/{id}", async (IClusterClient client, int id)
-    => await client.GetGrain<ITenant>("").GetUser(id) switch
+ => await client.GetGrain<ITenant>("").GetUser(id) switch
     {
         { IsSuccess: true                   } r => Results.Ok(r.Value),
         { ErrorCode: ErrorCode.UserNotFound } r => Results.NotFound(r.ErrorsText),
@@ -52,10 +52,11 @@ class Tenant : Grain, ITenant
 
     State S => state.State;
 
-    public async Task<Result<string>> GetUser(int id) =>
+    public Task<Result<string>> GetUser(int id) => Task.FromResult<Result<string>>(
         id >= 0 && id < S.Users.Count ?
             S.Users[id] :
-            Errors.UserNotFound(id); 
+            Errors.UserNotFound(id)
+    );
 
     [GenerateSerializer]
     internal class State
