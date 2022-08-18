@@ -7,7 +7,7 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Host.UseOrleans(silo => silo
+builder.Host.UseOrleans((_, silo) => silo
     .UseLocalhostClustering()
     .AddMemoryGrainStorageAsDefault()
 );
