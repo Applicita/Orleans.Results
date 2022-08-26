@@ -1,4 +1,4 @@
-﻿// Version: 1.0.0 (Using https://semver.org/)
+﻿// Version: 1.0.0-preview.2 (Using https://semver.org/)
 // Updated: 2022-08-26
 // See https://github.com/Applicita/Orleans.Results for updates to this file.
 
@@ -8,6 +8,9 @@ using Orleans;
 
 namespace Example;
 
+/// <summary>
+/// Result without value; use to return either <see cref="Ok"/> or <see cref="ResultBase{ErrorCode}.Error"/>(s)
+/// </summary>
 [GenerateSerializer, Immutable]
 public class Result : ResultBase<ErrorCode>
 {
@@ -24,6 +27,9 @@ public class Result : ResultBase<ErrorCode>
     public static implicit operator Result(List<Error> errors) => new(errors);
 }
 
+/// <summary>
+/// Result with value; use to return either a <typeparamref name="TValue"/> or <see cref="ResultBase{ErrorCode}.Error"/>(s)
+/// </summary>
 [GenerateSerializer]
 public class Result<TValue> : ResultBase<ErrorCode, TValue>
 {
@@ -48,8 +54,14 @@ public abstract class ResultBase<TErrorCode, TValue> : ResultBase<TErrorCode> wh
     protected ResultBase(Error error) : base(error) { }
     protected ResultBase(ImmutableArray<Error> errors) : base(errors) { }
 
+    /// <summary>
+    /// Returns the value for a success result, or the <typeparamref name="TValue"/> default for a failed result
+    /// </summary>
     public TValue? ValueOrDefault => value;
 
+    /// <summary>
+    /// Get or set the value for a success result; throws <see cref="InvalidOperationException"/> for a failed result
+    /// </summary>
     public TValue Value
     {
         get
@@ -77,13 +89,28 @@ public abstract class ResultBase<TErrorCode> where TErrorCode : Enum
     [Id(0)]
     readonly ImmutableArray<Error>? errors;
 
+    /// <summary>
+    /// Returns the errors for a failed result; throws an <see cref="InvalidOperationException"/> for a success result
+    /// </summary>
     public ImmutableArray<Error> Errors => errors ?? throw new InvalidOperationException("Attempt to access the errors of a success result");
 
+    /// <summary>
+    /// Returns the errorcode for a failed result with a single error; otherwise throws an exception
+    /// </summary>
     public TErrorCode ErrorCode => Errors.Single().Code;
 
+    /// <summary>
+    /// Returns all errors formatted in a single string for a failed result; throws an <see cref="InvalidOperationException"/> for a success result
+    /// </summary>
     public string ErrorsText => string.Join(Environment.NewLine, Errors);
 
-    /// <remarks>Intended for use with <see cref="Microsoft.AspNetCore.Mvc.ValidationProblemDetails"/> (in controllers) or <see cref="Microsoft.AspNetCore.Http.Results.ValidationProblem"/> (in minimal api's) </remarks>
+    /// <summary>
+    /// Supports serializing validation errors into a https://tools.ietf.org/html/rfc7807 based problem details format
+    /// </summary>
+    /// <remarks>Intended for use with <see cref="Microsoft.AspNetCore.Mvc.ValidationProblemDetails"/> (in MVC controllers) or <see cref="Microsoft.AspNetCore.Http.Results.ValidationProblem"/> (in minimal api's) </remarks>
+    /// <param name="validationErrorFlag">The enum flag used to identify an error as a validation error</param>
+    /// <param name="validationErrors">If the return value is true, receives all errors in a dictionary suitable for serializing into a https://tools.ietf.org/html/rfc7807 based format; otherwise set to null</param>
+    /// <returns>True for a failed result that has the <paramref name="validationErrorFlag"/> set in the <typeparamref name="TErrorCode"/> for <b>all</b> errors; false otherwise</returns>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0001:Simplify Names", Justification = "Full name is necessary to ensure link works independently of global usings")]
     public bool TryAsValidationErrors(TErrorCode validationErrorFlag, [NotNullWhen(true)] out Dictionary<string, string[]>? validationErrors)
     {
@@ -99,9 +126,10 @@ public abstract class ResultBase<TErrorCode> where TErrorCode : Enum
     }
 
     protected ResultBase() { }
-    protected ResultBase(Error error) => errors = ImmutableArray<Error>.Empty.Add(error);
+    protected ResultBase(Error error) => errors = ImmutableArray.Create(error);
     protected ResultBase(ImmutableArray<Error> errors) => this.errors = errors;
 
+    /// <returns>A <see cref="NotImplementedException"/> with <paramref name="message"/> and <see cref="ErrorsText"/> for a failed result; <b>throws</b> an <see cref="InvalidOperationException"/> exception for a success result</returns>
     public NotImplementedException UnhandledErrorException(string? message = null) => new($"{message}Unhandled error(s): " + ErrorsText);
 
     [GenerateSerializer, Immutable]
