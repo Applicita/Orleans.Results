@@ -1,8 +1,9 @@
-﻿// Version: 1.0.0-preview.1 (Using https://semver.org/)
-// Updated: 2022-06-12
+﻿// Version: 1.0.0 (Using https://semver.org/)
+// Updated: 2022-08-26
 // See https://github.com/Applicita/Orleans.Results for updates to this file.
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using Orleans;
 
 namespace Example;
@@ -12,53 +13,49 @@ public class Result : ResultBase<ErrorCode>
 {
     public static Result Ok { get; } = new();
 
+    public Result(ImmutableArray<Error> errors) : base(errors) { }
+    public Result(IEnumerable<Error> errors) : base(ImmutableArray.CreateRange(errors)) { }
     Result() { }
     Result(Error error) : base(error) { }
-    Result(ImmutableArray<Error> errors) : base(errors) { }
 
     public static implicit operator Result(Error error) => new(error);
     public static implicit operator Result(ErrorCode code) => new(code);
     public static implicit operator Result((ErrorCode code, string message) error) => new(error);
-
-    public Result With(Error error) => new(Errors.Add(error));
-    public Result With(ErrorCode code) => new(Errors.Add(code));
-    public Result With(ErrorCode code, string message) => new(Errors.Add((code, message)));
+    public static implicit operator Result(List<Error> errors) => new(errors);
 }
 
-[GenerateSerializer, Immutable]
-public class Result<T> : ResultBase<ErrorCode, T>
+[GenerateSerializer]
+public class Result<TValue> : ResultBase<ErrorCode, TValue>
 {
-    Result(T value) : base(value) { }
+    public Result(ImmutableArray<Error> errors) : base(errors) { }
+    public Result(IEnumerable<Error> errors) : base(ImmutableArray.CreateRange(errors)) { }
+    Result(TValue value) : base(value) { }
     Result(Error error) : base(error) { }
-    Result(ImmutableArray<Error> errors) : base(errors) { }
 
-    public static implicit operator Result<T>(T value) => new(value);
-    public static implicit operator Result<T>(Error error) => new(error);
-    public static implicit operator Result<T>(ErrorCode code) => new(code);
-    public static implicit operator Result<T>((ErrorCode code, string message) error) => new(error);
-
-    public Result<T> With(Error error) => new(Errors.Add(error));
-    public Result<T> With(ErrorCode code) => new(Errors.Add(code));
-    public Result<T> With(ErrorCode code, string message) => new(Errors.Add((code, message)));
+    public static implicit operator Result<TValue>(TValue value) => new(value);
+    public static implicit operator Result<TValue>(Error error) => new(error);
+    public static implicit operator Result<TValue>(ErrorCode code) => new(code);
+    public static implicit operator Result<TValue>((ErrorCode code, string message) error) => new(error);
+    public static implicit operator Result<TValue>(List<Error> errors) => new(errors);
 }
 
-[GenerateSerializer, Immutable]
-public abstract class ResultBase<TErrorCode, T> : ResultBase<TErrorCode> where TErrorCode : Enum
+[GenerateSerializer]
+public abstract class ResultBase<TErrorCode, TValue> : ResultBase<TErrorCode> where TErrorCode : Enum
 {
-    [Id(0)] T? value;
+    [Id(0)] TValue? value;
 
-    protected ResultBase(T value) => this.value = value;
+    protected ResultBase(TValue value) => this.value = value;
     protected ResultBase(Error error) : base(error) { }
     protected ResultBase(ImmutableArray<Error> errors) : base(errors) { }
 
-    public T? ValueOrDefault => value;
+    public TValue? ValueOrDefault => value;
 
-    public T Value
+    public TValue Value
     {
         get
         {
             ThrowIfFailed();
-            return value is null ? throw new InvalidOperationException("Attempt to access the value of an uninitialized result") : value;
+            return value!;
         }
 
         set
@@ -71,7 +68,7 @@ public abstract class ResultBase<TErrorCode, T> : ResultBase<TErrorCode> where T
     void ThrowIfFailed() { if (IsFailed) throw new InvalidOperationException("Attempt to access the value of a failed result"); }
 }
 
-[GenerateSerializer, Immutable]
+[GenerateSerializer]
 public abstract class ResultBase<TErrorCode> where TErrorCode : Enum
 {
     public bool IsSuccess => !IsFailed;
@@ -88,9 +85,18 @@ public abstract class ResultBase<TErrorCode> where TErrorCode : Enum
 
     /// <remarks>Intended for use with <see cref="Microsoft.AspNetCore.Mvc.ValidationProblemDetails"/> (in controllers) or <see cref="Microsoft.AspNetCore.Http.Results.ValidationProblem"/> (in minimal api's) </remarks>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0001:Simplify Names", Justification = "Full name is necessary to ensure link works independently of global usings")]
-    public Dictionary<string, string[]> ValidationErrors => new(
-        Errors.GroupBy(error => error.Code, error => error.Message)
-              .Select(group => new KeyValuePair<string, string[]>($"Error {group.Key}", group.ToArray())));
+    public bool TryAsValidationErrors(TErrorCode validationErrorFlag, [NotNullWhen(true)] out Dictionary<string, string[]>? validationErrors)
+    {
+        if (IsFailed && Errors.All(error => error.Code.HasFlag(validationErrorFlag)))
+        {
+            validationErrors = new(Errors
+                .GroupBy(error => error.Code, error => error.Message)
+                .Select(group => new KeyValuePair<string, string[]>(group.Key.ToString(), group.ToArray())));
+            return true;
+        }
+        validationErrors = null;
+        return false;
+    }
 
     protected ResultBase() { }
     protected ResultBase(Error error) => errors = ImmutableArray<Error>.Empty.Add(error);
