@@ -1,5 +1,5 @@
-﻿// Version: 1.0.0-preview.2 (Using https://semver.org/)
-// Updated: 2022-08-26
+﻿// Version: 1.0.0-preview.3 (Using https://semver.org/)
+// Updated: 2022-08-29
 // See https://github.com/Applicita/Orleans.Results for updates to this file.
 
 using System.Collections.Immutable;
@@ -77,6 +77,8 @@ public abstract class ResultBase<TErrorCode, TValue> : ResultBase<TErrorCode> wh
         }
     }
 
+    public override string ToString() => IsSuccess ? $"{Value}" : ErrorsText;
+
     void ThrowIfFailed() { if (IsFailed) throw new InvalidOperationException("Attempt to access the value of a failed result"); }
 }
 
@@ -124,6 +126,8 @@ public abstract class ResultBase<TErrorCode> where TErrorCode : Enum
         validationErrors = null;
         return false;
     }
+
+    public override string ToString() => IsSuccess ? nameof(Result.Ok) : ErrorsText;
 
     protected ResultBase() { }
     protected ResultBase(Error error) => errors = ImmutableArray.Create(error);
