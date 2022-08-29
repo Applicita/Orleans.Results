@@ -3,7 +3,7 @@ Concise, version-tolerant result pattern implementation for [Microsoft Orleans 4
 
 The result pattern solves a common problem: it returns an object indicating success or failure of an operation instead of throwing exceptions (see [why](#why) below).
 
-This implementation leverages [immutability in Orleans](https://github.com/dotnet/orleans/blob/b7bb116ba4f98b64428d449d26f20ea37d3501b6/src/Orleans.Serialization.Abstractions/Annotations.cs#L430) to optimize performance.
+This implementation leverages [immutability to optimize performance](#immutability-and-performance). Even though it is fully tested (100% code coverage), Orleans.Results will remain in preview until Orleans 4 is GA.
 
 ## Basic usage
 
@@ -123,7 +123,7 @@ public enum ErrorCode
     InvalidHouseNr = 2 | ValidationError,
 }
 ```
-`TryAsValidationErrors` is designed to support this implementation pattern:
+`TryAsValidationErrors` will only return validation errors if the result is failed and **all** errors in it are validation errors; the method is designed to support a typical validation implementation pattern:
 ```csharp
 public async Task<Result<string>> GetUsersAtAddress(string zip, string nr)
 {
