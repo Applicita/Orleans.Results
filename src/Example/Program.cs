@@ -18,7 +18,7 @@ builder.Host.UseOrleans((_, silo) => silo
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options => options.SwaggerDoc("v1", new OpenApiInfo { Title = "Example API with Orleans.Results for Orleans 4" }));
+builder.Services.AddSwaggerGen(options => options.SwaggerDoc("v1", new OpenApiInfo { Title = "Example API with Orleans.Results for Orleans 7" }));
 
 var app = builder.Build();
 
@@ -64,7 +64,7 @@ interface ITenant : IGrainWithStringKey
     Task<Result<ImmutableArray<int>>> GetUsersAtAddress(string zip, string nr);
 }
 
-class Tenant : Grain, ITenant
+sealed partial class Tenant : Grain, ITenant
 {
     readonly IPersistentState<State> state;
 
@@ -83,8 +83,8 @@ class Tenant : Grain, ITenant
         List<Result.Error> errors = new();
 
         // First check for validation errors - don't perform the operation if there are any.
-        if (!Regex.IsMatch(zip, @"^\d\d\d\d[A-Z]{2}$")) errors.Add(Errors.InvalidZipCode(zip));
-        if (!Regex.IsMatch(nr, @"^\d+[a-z]?$")) errors.Add(Errors.InvalidHouseNr(nr));
+        if (!ZipRegex().IsMatch(zip)) errors.Add(Errors.InvalidZipCode(zip));
+        if (!HouseNrRegex().IsMatch(nr)) errors.Add(Errors.InvalidHouseNr(nr));
         if (errors.Any()) return errors;
 
         // If there are no validation errors, perform the operation - this may return non-validation errors
@@ -94,10 +94,16 @@ class Tenant : Grain, ITenant
     }
 
     [GenerateSerializer]
-    internal class State
+    internal sealed class State
     {
         [Id(0)] public List<string> Users { get; set; } = new(new[] { "John", "Vincent" });
     }
+
+    [GeneratedRegex("^\\d\\d\\d\\d[A-Z]{2}$")]
+    private static partial Regex ZipRegex();
+
+    [GeneratedRegex("^\\d+[a-z]?$")]
+    private static partial Regex HouseNrRegex();
 }
 
 static class Errors

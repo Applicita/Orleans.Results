@@ -1,9 +1,9 @@
 # <img src="CSharp-Toolkit-Icon.png" alt="C# Toolkit" width="64px" /> Orleans.Results
-Concise, version-tolerant result pattern implementation for [Microsoft Orleans 4](https://github.com/dotnet/orleans/releases/tag/v4.0.0-preview1).
+Concise, version-tolerant result pattern implementation for [Microsoft Orleans 7](https://github.com/dotnet/orleans/releases/tag/v7.0.0-rc2).
 
 The result pattern solves a common problem: it returns an object indicating success or failure of an operation instead of throwing exceptions (see [why](#why) below).
 
-This implementation leverages [immutability to optimize performance](#immutability-and-performance). Even though it is fully tested (100% code coverage), Orleans.Results will remain in preview until Orleans 4 is GA.
+This implementation leverages [immutability to optimize performance](#immutability-and-performance). Even though it is fully tested (100% code coverage), Orleans.Results will remain in preview until Orleans 7 is GA.
 
 ## Basic usage
 
@@ -173,9 +173,9 @@ The result pattern solves a common problem: it returns an object indicating succ
 
   Using return values also allows you to use [code analysis rule CA1806](https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1806) to alert you where you forgot to check the return value (you can use a *discard* `_ =` to express intent to ignore a return value)
 
-### Orleans 4 introduces version-tolerant, high-performance serialization
+### Orleans 7 introduces version-tolerant, high-performance serialization
 However existing Result pattern implementations like [FluentResults](https://github.com/altmann/FluentResults) are not designed for serialization, let alone Orleans serialization. Orleans requires that you annotate your result types - including all types contained within - with the Orleans `[GenerateSerializer]` and `[Id]` attributes, or alternatively that you write additional code to serialize external types.
 
 This means that result objects that can contain contain arbitrary objects as part of the errors (like exceptions) require an open-ended amount of work. Orleans.Results avoids this work by defining an error to be an `enum` code plus a `string` message.
 
-Orleans.Results adheres to the Orleans 4 serialization guidelines, which enables compatibility with future changes in the result object serialization.
+Orleans.Results adheres to the Orleans 7 serialization guidelines, which enables compatibility with future changes in the result object serialization.
