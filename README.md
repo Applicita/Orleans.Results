@@ -151,8 +151,10 @@ The [example in the repo](https://github.com/Applicita/Orleans.Results/tree/main
 ## How do I get it?
 1) On the command line, ensure that the [template](https://github.com/Applicita/Modern.CSharp.Templates) is installed:
     ```
-    dotnet new --install Modern.CSharp.Templates
+    dotnet new install Modern.CSharp.Templates
     ```
+    (above is .NET 7 syntax; on .NET 6 use `--install`)
+
 2) In or below the project folder that contains grain interfaces (or that is referenced by projects that contain grain interfaces), type:
     ```
     dotnet new mcs-orleans-results
