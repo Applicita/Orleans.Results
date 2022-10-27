@@ -149,7 +149,7 @@ The performance of `Result<T>` can be optimized similarly by judiciously marking
 The [example in the repo](https://github.com/Applicita/Orleans.Results/tree/main/src/Example) demonstrates using Orleans.Results with both ASP.NET Core minimal API's and MVC:
 ![Orleans Results Example](Orleans-Results-Example.png)
 ## How do I get it?
-1) On the command line, ensure that the [template](https://github.com/Applicita/Modern.CSharp.Templates) is installed:
+1) On the command line, ensure that the [template](https://github.com/Applicita/Modern.CSharp.Templates) is installed<br />(note that below is .NET 7 cli syntax; Orleans 7 requires .NET 7):
     ```
     dotnet new install Modern.CSharp.Templates
     ```
