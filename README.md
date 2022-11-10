@@ -5,7 +5,7 @@ Included in [![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/Moder
 
 The result pattern solves a common problem: it returns an object indicating success or failure of an operation instead of throwing exceptions (see [why](#why) below).
 
-This implementation leverages [immutability to optimize performance](#immutability-and-performance). Even though it is fully tested (100% code coverage), Orleans.Results will remain in preview until Orleans 7 is GA.
+This implementation leverages [immutability to optimize performance](#immutability-and-performance) and is fully tested (100% code coverage).
 
 ## Basic usage
 
