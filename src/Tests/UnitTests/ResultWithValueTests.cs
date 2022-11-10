@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using Example;
-using Code = Example.ErrorCode;
 
 namespace Orleans.Results.Tests.UnitTests;
 
@@ -31,11 +30,11 @@ public class ResultWithValueTests
         Assert.False(result.IsSuccess);
         var error = Assert.Single(result.Errors);
 
-        Assert.Equal(Code.UserNotFound, error.Code);
+        Assert.Equal(ErrorNr.UserNotFound, error.Nr);
         Assert.Equal("User 2 not found", error.Message);
 
-        Assert.Equal(Code.UserNotFound, result.ErrorCode);
-        string expectedErrorsText = "Error { Code = UserNotFound, Message = User 2 not found }";
+        Assert.Equal(ErrorNr.UserNotFound, result.ErrorNr);
+        string expectedErrorsText = "Error { Nr = UserNotFound, Message = User 2 not found }";
         Assert.Equal(expectedErrorsText, result.ErrorsText);
         Assert.Equal(expectedErrorsText, result.ToString());
     }
@@ -48,11 +47,11 @@ public class ResultWithValueTests
         Assert.False(result.IsSuccess);
         Assert.Collection(result.Errors,
             error => {
-                Assert.Equal(Code.InvalidZipCode, error.Code);
+                Assert.Equal(ErrorNr.InvalidZipCode, error.Nr);
                 Assert.Equal("Zip code 1234A is not valid - must be 4 digits plus 2 capital letters", error.Message);
             },
             error => {
-                Assert.Equal(Code.InvalidHouseNr, error.Code);
+                Assert.Equal(ErrorNr.InvalidHouseNr, error.Nr);
                 Assert.Equal("House number 1aa is not valid - must be digit(s) plus optionally a lowercase letter a-z", error.Message);
             }
         );
@@ -63,7 +62,7 @@ public class ResultWithValueTests
     {
         var result = await Tenant.GetUsersAtAddress("1234A", "1aa");
 
-        Assert.True(result.TryAsValidationErrors(Code.ValidationError, out var validationErrors));
+        Assert.True(result.TryAsValidationErrors(ErrorNr.ValidationError, out var validationErrors));
         Assert.Collection(validationErrors,
             kv => {
                 Assert.Equal($"InvalidZipCode", kv.Key);
@@ -84,7 +83,7 @@ public class ResultWithValueTests
         var result = await Tenant.GetUsersAtAddress("1234AB", "2");
         Assert.True(result.IsFailed);
 
-        Assert.False(result.TryAsValidationErrors(Code.ValidationError, out var validationErrors));
+        Assert.False(result.TryAsValidationErrors(ErrorNr.ValidationError, out var validationErrors));
         Assert.Null(validationErrors);
     }
 
@@ -105,7 +104,7 @@ public class ResultWithValueTests
         var exception = Assert.Throws<InvalidOperationException>(() => result.Errors);
         Assert.Equal("Attempt to access the errors of a success result", exception!.Message);
 
-        exception = Assert.Throws<InvalidOperationException>(() => result.ErrorCode);
+        exception = Assert.Throws<InvalidOperationException>(() => result.ErrorNr);
         Assert.Equal("Attempt to access the errors of a success result", exception!.Message);
     }
 
@@ -115,14 +114,14 @@ public class ResultWithValueTests
         var result = await Tenant.GetUsersAtAddress("1234A", "1aa");
         if (result.Errors.Length < 2) throw new InvalidOperationException();
 
-        var exception = Assert.Throws<InvalidOperationException>(() => result.ErrorCode);
+        var exception = Assert.Throws<InvalidOperationException>(() => result.ErrorNr);
         Assert.Equal("Sequence contains more than one element", exception!.Message);
     }
 
     [Fact]
     public void NewResult_WithImmutableArrayOfErrors_CreatesResultWithErrors()
     {
-        var errors = ImmutableArray.CreateRange(new Result.Error[] { Code.UserNotFound, Code.NoUsersAtAddress });
+        var errors = ImmutableArray.CreateRange(new Result.Error[] { ErrorNr.UserNotFound, ErrorNr.NoUsersAtAddress });
         var result = new Result<bool>(errors);
         Assert.Equal(errors, result.Errors);
     }
@@ -130,7 +129,7 @@ public class ResultWithValueTests
     [Fact]
     public void NewResult_WithIEnumerableOfErrors_CreatesResultWithErrors()
     {
-        var errors = new Result.Error[] { Code.UserNotFound }.AsEnumerable();
+        var errors = new Result.Error[] { ErrorNr.UserNotFound }.AsEnumerable();
         var result = new Result<bool>(errors);
         Assert.Equal(errors, result.Errors);
     }
@@ -146,7 +145,7 @@ public class ResultWithValueTests
     [Fact]
     public void ImplicitConversion_OfErrorToResult_GivesResultWithError()
     {
-        Result.Error assignedError = new(Code.UserNotFound, "Error message");
+        Result.Error assignedError = new(ErrorNr.UserNotFound, "Error message");
         Result<bool> result = assignedError;
 
         var errorInResult = Assert.Single(result.Errors);
@@ -156,25 +155,25 @@ public class ResultWithValueTests
     [Fact]
     public void ImplicitConversion_OfErrorCodeToResult_GivesResultWithErrorCode()
     {
-        Result<bool> result = Code.UserNotFound;
+        Result<bool> result = ErrorNr.UserNotFound;
 
-        Assert.Equal(Code.UserNotFound, result.ErrorCode);
+        Assert.Equal(ErrorNr.UserNotFound, result.ErrorNr);
     }
 
     [Fact]
     public void ImplicitConversion_OfErrorCodeAndMessageToResult_GivesResultWithErrorCodeAndMessage()
     {
-        Result<bool> result = (Code.UserNotFound, "Error Message");
+        Result<bool> result = (ErrorNr.UserNotFound, "Error Message");
 
-        Assert.Equal(Code.UserNotFound, result.ErrorCode);
+        Assert.Equal(ErrorNr.UserNotFound, result.ErrorNr);
         Assert.Equal("Error Message", result.Errors.SingleOrDefault()?.Message);
     }
 
     [Fact]
     public void ImplicitConversion_OfListOfErrorsToResult_GivesResultWithErrors()
     {
-        Result.Error error1 = new(Code.UserNotFound, "Error message 1");
-        var error2 = error1 with { Code = Code.NoUsersAtAddress, Message = "Error message 2" };
+        Result.Error error1 = new(ErrorNr.UserNotFound, "Error message 1");
+        var error2 = error1 with { Nr = ErrorNr.NoUsersAtAddress, Message = "Error message 2" };
         // With is used to get coverage of the generated set_Code and set_Message
 
         List<Result.Error> errors = new(new Result.Error[] { error1, error2 });
@@ -193,7 +192,7 @@ public class ResultWithValueTests
     [Fact]
     public void GetValueOrDefault_OfResultWithError_GivesDefault()
     {
-        Result<int> result = Code.UserNotFound;
+        Result<int> result = ErrorNr.UserNotFound;
         Assert.Equal(default, result.ValueOrDefault);
     }
 
@@ -209,7 +208,7 @@ public class ResultWithValueTests
     [Fact]
     public void SetValue_OfResultWithError_ThrowsException()
     {
-        Result<int> result = Code.UserNotFound;
+        Result<int> result = ErrorNr.UserNotFound;
         var exception = Assert.Throws<InvalidOperationException>(() => result.Value = 1);
         Assert.Equal("Attempt to access the value of a failed result", exception.Message);
     }
@@ -217,14 +216,14 @@ public class ResultWithValueTests
     [Fact]
     public void GetUnhandledErrorException_FromResultWithError_ReturnsNotImplementedExceptionWithErrors()
     {
-        Result<bool> result = (Code.UserNotFound, "Error message");
+        Result<bool> result = (ErrorNr.UserNotFound, "Error message");
         var exception1 = result.UnhandledErrorException();
         var exception2 = result.UnhandledErrorException("Prefix message - ");
 
         _ = Assert.IsType<NotImplementedException>(exception1);
-        Assert.Equal("Unhandled error(s): Error { Code = UserNotFound, Message = Error message }", exception1.Message);
+        Assert.Equal("Unhandled error(s): Error { Nr = UserNotFound, Message = Error message }", exception1.Message);
         _ = Assert.IsType<NotImplementedException>(exception2);
-        Assert.Equal("Prefix message - Unhandled error(s): Error { Code = UserNotFound, Message = Error message }", exception2.Message);
+        Assert.Equal("Prefix message - Unhandled error(s): Error { Nr = UserNotFound, Message = Error message }", exception2.Message);
     }
 
     Task<Result<string>> GetUserJohn() => GetUser(0);

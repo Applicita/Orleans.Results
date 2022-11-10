@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using Microsoft.AspNetCore.Mvc;
-using Orleans;
 
 namespace Example;
 
@@ -16,7 +15,7 @@ public class Controller : ControllerBase
      => await client.GetGrain<ITenant>("").GetUser(id) switch
         {
             { IsSuccess: true                   } r => Ok(r.Value),
-            { ErrorCode: ErrorCode.UserNotFound } r => NotFound(r.ErrorsText),
+            { ErrorNr: ErrorNr.UserNotFound } r => NotFound(r.ErrorsText),
             {                                   } r => throw r.UnhandledErrorException()
         };
 
@@ -25,13 +24,13 @@ public class Controller : ControllerBase
     {
         var result = await client.GetGrain<ITenant>("").GetUsersAtAddress(zip, nr);
 
-        return result.TryAsValidationErrors(ErrorCode.ValidationError, out var validationErrors)
+        return result.TryAsValidationErrors(ErrorNr.ValidationError, out var validationErrors)
             ? ValidationProblem(new ValidationProblemDetails(validationErrors))
 
             : result switch
             {
                 { IsSuccess: true                       } r => Ok(r.Value),
-                { ErrorCode: ErrorCode.NoUsersAtAddress } r => NotFound(r.ErrorsText),
+                { ErrorNr: ErrorNr.NoUsersAtAddress } r => NotFound(r.ErrorsText),
                 {                                       } r => throw r.UnhandledErrorException()
             };
     }

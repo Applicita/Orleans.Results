@@ -1,6 +1,5 @@
 ﻿using Orleans.Runtime;
 using Example;
-using ErrorCode = Example.ErrorCode;
 using Microsoft.OpenApi.Models;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
@@ -31,7 +30,7 @@ app.MapGet("minimalapis/users/{id}", async (IClusterClient client, int id)
  => await client.GetGrain<ITenant>("").GetUser(id) switch
     {
         { IsSuccess: true                   } r => Results.Ok(r.Value),
-        { ErrorCode: ErrorCode.UserNotFound } r => Results.NotFound(r.ErrorsText),
+        { ErrorNr: ErrorNr.UserNotFound } r => Results.NotFound(r.ErrorsText),
         {                                   } r => throw r.UnhandledErrorException()
     }
 );
@@ -40,13 +39,13 @@ app.MapGet("minimalapis/usersataddress", async (IClusterClient client, string zi
  => {
         var result = await client.GetGrain<ITenant>("").GetUsersAtAddress(zip, nr);
 
-        return result.TryAsValidationErrors(ErrorCode.ValidationError, out var validationErrors)
+        return result.TryAsValidationErrors(ErrorNr.ValidationError, out var validationErrors)
             ? Results.ValidationProblem(validationErrors)
 
             : result switch
             {
                 { IsSuccess: true                       } r => Results.Ok(r.Value),
-                { ErrorCode: ErrorCode.NoUsersAtAddress } r => Results.NotFound(r.ErrorsText),
+                { ErrorNr: ErrorNr.NoUsersAtAddress } r => Results.NotFound(r.ErrorsText),
                 {                                       } r => throw r.UnhandledErrorException()
             };
     }
@@ -106,8 +105,8 @@ sealed partial class Tenant : Grain, ITenant
 
 static class Errors
 {
-    public static Result.Error UserNotFound(int id) => new(ErrorCode.UserNotFound, $"User {id} not found");
-    public static Result.Error InvalidZipCode(string zip) => new(ErrorCode.InvalidZipCode, $"Zip code {zip} is not valid - must be 4 digits plus 2 capital letters");
-    public static Result.Error InvalidHouseNr(string nr) => new(ErrorCode.InvalidHouseNr, $"House number {nr} is not valid - must be digit(s) plus optionally a lowercase letter a-z");
-    public static Result.Error NoUsersAtAddress(string address) => new(ErrorCode.NoUsersAtAddress, $"No users found at address {address}");
+    public static Result.Error UserNotFound(int id) => new(ErrorNr.UserNotFound, $"User {id} not found");
+    public static Result.Error InvalidZipCode(string zip) => new(ErrorNr.InvalidZipCode, $"Zip nr {zip} is not valid - must be 4 digits plus 2 capital letters");
+    public static Result.Error InvalidHouseNr(string nr) => new(ErrorNr.InvalidHouseNr, $"House number {nr} is not valid - must be digit(s) plus optionally a lowercase letter a-z");
+    public static Result.Error NoUsersAtAddress(string address) => new(ErrorNr.NoUsersAtAddress, $"No users found at address {address}");
 }

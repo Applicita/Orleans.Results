@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using Example;
-using Code = Example.ErrorCode;
 
 namespace Orleans.Results.Tests.UnitTests;
 
@@ -29,11 +28,11 @@ public class ResultWithoutValueTests
         Assert.False(result.IsSuccess);
         var error = Assert.Single(result.Errors);
 
-        Assert.Equal(Code.UserNotFound, error.Code);
+        Assert.Equal(ErrorNr.UserNotFound, error.Nr);
         Assert.Equal("User 2 not found", error.Message);
 
-        Assert.Equal(Code.UserNotFound, result.ErrorCode);
-        string expectedErrorsText = "Error { Code = UserNotFound, Message = User 2 not found }";
+        Assert.Equal(ErrorNr.UserNotFound, result.ErrorNr);
+        string expectedErrorsText = "Error { Nr = UserNotFound, Message = User 2 not found }";
         Assert.Equal(expectedErrorsText, result.ErrorsText);
         Assert.Equal(expectedErrorsText, result.ToString());
     }
@@ -41,7 +40,7 @@ public class ResultWithoutValueTests
     [Fact]
     public void NewResult_WithImmutableArrayOfErrors_CreatesResultWithErrors()
     {
-        var errors = ImmutableArray.CreateRange(new Result.Error[] { Code.UserNotFound, Code.NoUsersAtAddress });
+        var errors = ImmutableArray.CreateRange(new Result.Error[] { ErrorNr.UserNotFound, ErrorNr.NoUsersAtAddress });
         var result = new Result(errors);
         Assert.Equal(errors, result.Errors);
     }
@@ -49,7 +48,7 @@ public class ResultWithoutValueTests
     [Fact]
     public void NewResult_WithIEnumerableOfErrors_CreatesResultWithErrors()
     {
-        var errors = new Result.Error[] { Code.UserNotFound }.AsEnumerable();
+        var errors = new Result.Error[] { ErrorNr.UserNotFound }.AsEnumerable();
         var result = new Result(errors);
         Assert.Equal(errors, result.Errors);
     }
@@ -58,7 +57,7 @@ public class ResultWithoutValueTests
     [Fact]
     public void ImplicitConversion_OfErrorToResult_GivesResultWithError()
     {
-        Result.Error assignedError = new(Code.UserNotFound, "Error message");
+        Result.Error assignedError = new(ErrorNr.UserNotFound, "Error message");
         Result result = assignedError;
 
         var errorInResult = Assert.Single(result.Errors);
@@ -68,25 +67,25 @@ public class ResultWithoutValueTests
     [Fact]
     public void ImplicitConversion_OfErrorCodeToResult_GivesResultWithErrorCode()
     {
-        Result result = Code.UserNotFound;
+        Result result = ErrorNr.UserNotFound;
 
-        Assert.Equal(Code.UserNotFound, result.ErrorCode);
+        Assert.Equal(ErrorNr.UserNotFound, result.ErrorNr);
     }
 
     [Fact]
     public void ImplicitConversion_OfErrorCodeAndMessageToResult_GivesResultWithErrorCodeAndMessage()
     {
-        Result result = (Code.UserNotFound, "Error Message");
+        Result result = (ErrorNr.UserNotFound, "Error Message");
 
-        Assert.Equal(Code.UserNotFound, result.ErrorCode);
+        Assert.Equal(ErrorNr.UserNotFound, result.ErrorNr);
         Assert.Equal("Error Message", result.Errors.SingleOrDefault()?.Message);
     }
 
     [Fact]
     public void ImplicitConversion_OfListOfErrorsToResult_GivesResultWithErrors()
     {
-        Result.Error error1 = new(Code.UserNotFound, "Error message 1");
-        var error2 = error1 with { Code = Code.NoUsersAtAddress, Message = "Error message 2" };
+        Result.Error error1 = new(ErrorNr.UserNotFound, "Error message 1");
+        var error2 = error1 with { Nr = ErrorNr.NoUsersAtAddress, Message = "Error message 2" };
 
         List<Result.Error> errors = new(new Result.Error[] { error1, error2 });
         Result result = errors;

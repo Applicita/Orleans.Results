@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\ErrorCode.cs" Link="Orleans.Results\ErrorCode.cs" />
+    <Compile Include="..\ErrorNr.cs" Link="Orleans.Results\ErrorNr.cs" />
     <Compile Include="..\Result.cs" Link="Orleans.Results\Result.cs" />
   </ItemGroup>
 

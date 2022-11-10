@@ -61,8 +61,8 @@ public partial class Tenant : Grain, ITenant
 
 public static class Errors
 {
-    public static Result.Error UserNotFound(int id) => new(ErrorCode.UserNotFound, $"User {id} not found");
-    public static Result.Error InvalidZipCode(string zip) => new(ErrorCode.InvalidZipCode, $"Zip code {zip} is not valid - must be 4 digits plus 2 capital letters");
-    public static Result.Error InvalidHouseNr(string nr) => new(ErrorCode.InvalidHouseNr, $"House number {nr} is not valid - must be digit(s) plus optionally a lowercase letter a-z");
-    public static Result.Error NoUsersAtAddress(string address) => new(ErrorCode.NoUsersAtAddress, $"No users found at address {address}");
+    public static Result.Error UserNotFound(int id)             => new(ErrorNr.UserNotFound    , $"User {id} not found");
+    public static Result.Error InvalidZipCode(string zip)       => new(ErrorNr.InvalidZipCode  , $"Zip code {zip} is not valid - must be 4 digits plus 2 capital letters");
+    public static Result.Error InvalidHouseNr(string nr)        => new(ErrorNr.InvalidHouseNr  , $"House number {nr} is not valid - must be digit(s) plus optionally a lowercase letter a-z");
+    public static Result.Error NoUsersAtAddress(string address) => new(ErrorNr.NoUsersAtAddress, $"No users found at address {address}");
 }

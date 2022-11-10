@@ -11,12 +11,12 @@ This implementation leverages [immutability to optimize performance](#immutabili
 
 Define error codes:
 ```csharp
-public enum ErrorCode
+public enum ErrorNr
 {
     UserNotFound = 1
 }
 ```
-> Note that this enum is used to define convenience classes:<br />`Result : ResultBase<ErrorCode>` and `Result<T> : ResultBase<ErrorCode, T>`<br />These classes save you from having to specify `<ErrorCode>` as type parameter in every grain method signature
+> Note that this enum is used to define convenience classes:<br />`Result : ResultBase<ErrorNr>` and `Result<T> : ResultBase<ErrorNr, T>`<br />These classes save you from having to specify `<ErrorNr>` as type parameter in every grain method signature
 
 Grain contract:
 ```csharp
@@ -30,9 +30,9 @@ Use in ASP.NET Core minimal API's:
 app.MapGet("minimalapis/users/{id}", async (IClusterClient client, int id)
  => await client.GetGrain<ITenant>("").GetUser(id) switch
     {
-        { IsSuccess: true                   } r => Results.Ok(r.Value),
-        { ErrorCode: ErrorCode.UserNotFound } r => Results.NotFound(r.ErrorsText),
-        {                                   } r => throw r.UnhandledErrorException()
+        { IsSuccess: true               } r => Results.Ok(r.Value),
+        { ErrorNr: ErrorNr.UserNotFound } r => Results.NotFound(r.ErrorsText),
+        {                               } r => throw r.UnhandledErrorException()
     }
 );
 ```
@@ -42,9 +42,9 @@ Use in ASP.NET Core MVC:
 public async Task<ActionResult<string>> GetUser(int id)
  => await client.GetGrain<ITenant>("").GetUser(id) switch
     {
-        { IsSuccess: true                   } r => Ok(r.Value),
-        { ErrorCode: ErrorCode.UserNotFound } r => NotFound(r.ErrorsText),
-        {                                   } r => throw r.UnhandledErrorException()
+        { IsSuccess: true               } r => Ok(r.Value),
+        { ErrorNr: ErrorNr.UserNotFound } r => NotFound(r.ErrorsText),
+        {                               } r => throw r.UnhandledErrorException()
     };
 ```
 Grain implementation:
@@ -60,7 +60,7 @@ class Tenant : Grain, ITenant
 
 static class Errors
 {
-    public static Result.Error UserNotFound(int id) => new(ErrorCode.UserNotFound, $"User {id} not found");
+    public static Result.Error UserNotFound(int id) => new(ErrorNr.UserNotFound, $"User {id} not found");
 }
 ```
 
@@ -71,9 +71,9 @@ The `Result` and `Result<T>` convenience classes have implicit convertors to all
 ```csharp
 async Task<Result<string>> GetString(int i) => i switch {
     0 => "Success!",
-    1 => ErrorCode.NotFound,
-    2 => (ErrorCode.NotFound, "Not found"),
-    3 => new Error(ErrorCode.NotFound, "Not found"),
+    1 => ErrorNr.NotFound,
+    2 => (ErrorNr.NotFound, "Not found"),
+    3 => new Error(ErrorNr.NotFound, "Not found"),
     4 => new List<Error>(/*...*/)
 };
 ```
@@ -88,35 +88,35 @@ async Task<Result<string>> GetString()
 }
 ```
 ## Validation errors
-The `TryAsValidationErrors` method is covenient for returning [RFC7807](https://tools.ietf.org/html/rfc7807) based problem detail responses. This method is designed to be used with [ValidationProblemDetails](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.validationproblemdetails?view=aspnetcore-6.0) (in MVC):<br>
+The `TryAsValidationErrors` method is covenient for returning [RFC7807](https://tools.ietf.org/html/rfc7807) based problem detail responses. This method is designed to be used with [ValidationProblemDetails](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.validationproblemdetails?view=aspnetcore-7.0) (in MVC):<br>
 ```csharp
-return result.TryAsValidationErrors(ErrorCode.ValidationError, out var validationErrors)
+return result.TryAsValidationErrors(ErrorNr.ValidationError, out var validationErrors)
     ? ValidationProblem(new ValidationProblemDetails(validationErrors))
 
     : result switch
     {
-        { IsSuccess: true } r => Ok(r.Value),
-        { ErrorCode: ErrorCode.NoUsersAtAddress } r => NotFound(r.ErrorsText),
-        { } r => throw r.UnhandledErrorException()
+        { IsSuccess: true                   } r => Ok(r.Value),
+        { ErrorNr: ErrorNr.NoUsersAtAddress } r => NotFound(r.ErrorsText),
+        {                                   } r => throw r.UnhandledErrorException()
     };
 ```
-and with [Results.ValidationProblem](https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.results.validationproblem?view=aspnetcore-6.0) (in minimal API's):
+and with [Results.ValidationProblem](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.results.validationproblem?view=aspnetcore-7.0) (in minimal API's):
 ```csharp
-return result.TryAsValidationErrors(ErrorCode.ValidationError, out var validationErrors)
+return result.TryAsValidationErrors(ErrorNr.ValidationError, out var validationErrors)
     ? Results.ValidationProblem(validationErrors)
 
     : result switch
     {
-        { IsSuccess: true                       } r => Results.Ok(r.Value),
-        { ErrorCode: ErrorCode.NoUsersAtAddress } r => Results.NotFound(r.ErrorsText),
-        {                                       } r => throw r.UnhandledErrorException()
+        { IsSuccess: true                   } r => Results.Ok(r.Value),
+        { ErrorNr: ErrorNr.NoUsersAtAddress } r => Results.NotFound(r.ErrorsText),
+        {                                   } r => throw r.UnhandledErrorException()
     };
 ```
 
-To use `TryAsValidationErrors`, your `ErrorCode` must be a `[Flags] enum` with a flag that identifies which error codes are validation errors:
+To use `TryAsValidationErrors`, your `ErrorNr` must be a `[Flags] enum` with a flag that identifies which error codes are validation errors:
 ```csharp
 [Flags]
-public enum ErrorCode
+public enum ErrorNr
 {
     NoUsersAtAddress = 1,
 
@@ -132,8 +132,8 @@ public async Task<Result<string>> GetUsersAtAddress(string zip, string nr)
     List<Result.Error> errors = new();
 
     // First check for validation errors - don't perform the operation if there are any.
-    if (!Regex.IsMatch(zip, @"^\d\d\d\d[A-Z]{2}$")) errors.Add(Errors.InvalidZipCode(zip));
-    if (!Regex.IsMatch(nr, @"^\d+[a-z]?$")) errors.Add(Errors.InvalidHouseNr(nr));
+    if (!ZipRegex().IsMatch(zip)) errors.Add(Errors.InvalidZipCode(zip));
+    if (!HouseNrRegex().IsMatch(nr)) errors.Add(Errors.InvalidHouseNr(nr));
     if (errors.Any()) return errors;
 
     // If there are no validation errors, perform the operation - this may return non-validation errors
@@ -160,10 +160,10 @@ The [example in the repo](https://github.com/Applicita/Orleans.Results/tree/main
     ```
     dotnet new mcs-orleans-results
     ```
-    This will add the [ErrorCode.cs](https://github.com/Applicita/Orleans.Results/blob/main/src/ErrorCode.cs) and [Result.cs](https://github.com/Applicita/Orleans.Results/blob/main/src/Result.cs) files there (if you prefer, you can copy the files there manually)
+    This will add the [ErrorNr.cs](https://github.com/Applicita/Orleans.Results/blob/main/src/ErrorNr.cs) and [Result.cs](https://github.com/Applicita/Orleans.Results/blob/main/src/Result.cs) files there (if you prefer, you can copy the files there manually)
 
 3) Update the `Example` namespace in the added files to match your project
-4) Edit the `ErrorCode` enum to define error codes
+4) Edit the `ErrorNr` enum to define error codes
 
 ## Why?
 The result pattern solves a common problem: it returns an object indicating success or failure of an operation instead of throwing/using exceptions.
@@ -179,6 +179,6 @@ The result pattern solves a common problem: it returns an object indicating succ
 ### Orleans 7 introduces version-tolerant, high-performance serialization
 However existing Result pattern implementations like [FluentResults](https://github.com/altmann/FluentResults) are not designed for serialization, let alone Orleans serialization. Orleans requires that you annotate your result types - including all types contained within - with the Orleans `[GenerateSerializer]` and `[Id]` attributes, or alternatively that you write additional code to serialize external types.
 
-This means that result objects that can contain contain arbitrary objects as part of the errors (like exceptions) require an open-ended amount of work. Orleans.Results avoids this work by defining an error to be an `enum` code plus a `string` message.
+This means that result objects that can contain contain arbitrary objects as part of the errors (like exceptions) require an open-ended amount of work. Orleans.Results avoids this work by defining an error to be an `enum` nr plus a `string` message.
 
 Orleans.Results adheres to the Orleans 7 serialization guidelines, which enables compatibility with future changes in the result object serialization.

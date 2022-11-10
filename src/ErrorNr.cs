@@ -1,7 +1,7 @@
 ﻿namespace Example;
 
 [Flags]
-public enum ErrorCode
+public enum ErrorNr
 {
     UserNotFound     = 1,
     NoUsersAtAddress = 2,
