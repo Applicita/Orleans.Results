@@ -20,6 +20,7 @@ public class ResultWithValueTests
 
         Assert.True(result.IsSuccess);
         Assert.Equal("John", result.Value);
+        Assert.Equal($"{result.Value}", result.ToString());
     }
 
     [Fact]
@@ -34,7 +35,9 @@ public class ResultWithValueTests
         Assert.Equal("User 2 not found", error.Message);
 
         Assert.Equal(Code.UserNotFound, result.ErrorCode);
-        Assert.Equal("Error { Code = UserNotFound, Message = User 2 not found }", result.ErrorsText);
+        string expectedErrorsText = "Error { Code = UserNotFound, Message = User 2 not found }";
+        Assert.Equal(expectedErrorsText, result.ErrorsText);
+        Assert.Equal(expectedErrorsText, result.ToString());
     }
 
     [Fact]

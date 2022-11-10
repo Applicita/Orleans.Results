@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using System.Text.RegularExpressions;
-using Orleans;
 using Orleans.Runtime;
 
 namespace Example;
@@ -12,7 +11,7 @@ public interface ITenant : IGrainWithStringKey
     Task<Result<ImmutableArray<int>>> GetUsersAtAddress(string zip, string nr);
 }
 
-public class Tenant : Grain, ITenant
+public partial class Tenant : Grain, ITenant
 {
     readonly IPersistentState<State> state;
 
@@ -37,8 +36,8 @@ public class Tenant : Grain, ITenant
         List<Result.Error> errors = new ();
 
         // First check for validation errors - don't perform the operation if there are any.
-        if (!Regex.IsMatch(zip, @"^\d\d\d\d[A-Z]{2}$")) errors.Add(Errors.InvalidZipCode(zip));
-        if (!Regex.IsMatch(nr , @"^\d+[a-z]?$")       ) errors.Add(Errors.InvalidHouseNr(nr));
+        if (!ZipCodeRegex().IsMatch(zip)) errors.Add(Errors.InvalidZipCode(zip));
+        if (!HouseNrRegex().IsMatch(nr)) errors.Add(Errors.InvalidHouseNr(nr));
         if (errors.Any()) return errors;
 
         // If there are no validation errors, perform the operation - this may return non-validation errors
@@ -52,6 +51,12 @@ public class Tenant : Grain, ITenant
     {
         [Id(0)] public List<string> Users { get; set; } = new(new[] { "John", "Vincent" });
     }
+
+    [GeneratedRegex("^\\d\\d\\d\\d[A-Z]{2}$")]
+    private static partial Regex ZipCodeRegex();
+
+    [GeneratedRegex("^\\d+[a-z]?$")]
+    private static partial Regex HouseNrRegex();
 }
 
 public static class Errors

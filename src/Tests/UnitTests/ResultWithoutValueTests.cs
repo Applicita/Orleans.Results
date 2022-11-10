@@ -18,6 +18,7 @@ public class ResultWithoutValueTests
     {
         var result = await Tenant.UpdateUser(1, "VincentH.NET");
         Assert.True(result.IsSuccess);
+        Assert.Equal(nameof(Result.Ok), result.ToString());
     }
 
     [Fact]
@@ -32,7 +33,9 @@ public class ResultWithoutValueTests
         Assert.Equal("User 2 not found", error.Message);
 
         Assert.Equal(Code.UserNotFound, result.ErrorCode);
-        Assert.Equal("Error { Code = UserNotFound, Message = User 2 not found }", result.ErrorsText);
+        string expectedErrorsText = "Error { Code = UserNotFound, Message = User 2 not found }";
+        Assert.Equal(expectedErrorsText, result.ErrorsText);
+        Assert.Equal(expectedErrorsText, result.ToString());
     }
 
     [Fact]

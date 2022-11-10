@@ -1,5 +1,4 @@
-﻿using Orleans.Hosting;
-using Orleans.TestingHost;
+﻿using Orleans.TestingHost;
 
 namespace Orleans.Results.Tests;
 
@@ -16,7 +15,7 @@ public sealed class ClusterFixture : IDisposable
 
     public TestingHost.TestCluster Cluster { get; }
 
-    class SiloConfigurator : ISiloConfigurator
+    sealed class SiloConfigurator : ISiloConfigurator
     {
         public void Configure(ISiloBuilder siloBuilder) => siloBuilder.AddMemoryGrainStorageAsDefault();
     }
