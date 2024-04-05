@@ -3,6 +3,7 @@ using Example;
 using Microsoft.OpenApi.Models;
 using System.Collections.Immutable;
 using System.Text.RegularExpressions;
+using System.Collections.ObjectModel;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,12 +62,8 @@ interface ITenant : IGrainWithStringKey
     Task<Result<ImmutableArray<int>>> GetUsersAtAddress(string zip, string nr);
 }
 
-sealed partial class Tenant : Grain, ITenant
+sealed partial class Tenant([PersistentState("state")] IPersistentState<Tenant.State> state) : Grain, ITenant
 {
-    readonly IPersistentState<State> state;
-
-    public Tenant([PersistentState("state")] IPersistentState<State> state) => this.state = state;
-
     State S => state.State;
 
     public Task<Result<string>> GetUser(int id) => Task.FromResult<Result<string>>(
@@ -77,23 +74,23 @@ sealed partial class Tenant : Grain, ITenant
 
     public async Task<Result<ImmutableArray<int>>> GetUsersAtAddress(string zip, string nr)
     {
-        List<Result.Error> errors = new();
+        Collection<Result.Error> errors = [];
 
         // First check for validation errors - don't perform the operation if there are any.
         if (!ZipRegex().IsMatch(zip)) errors.Add(Errors.InvalidZipCode(zip));
         if (!HouseNrRegex().IsMatch(nr)) errors.Add(Errors.InvalidHouseNr(nr));
-        if (errors.Any()) return errors;
+        if (errors.Count != 0) return errors;
 
         // If there are no validation errors, perform the operation - this may return non-validation errors
         await Task.CompletedTask; // Simulate an operation
         if (!(int.TryParse(nr, out int number) && number % 2 == S.Users.Count % 2)) errors.Add(Errors.NoUsersAtAddress($"{zip} {nr}")); // Success for 50% of numbers that are int
-        return errors.Any() ? errors : ImmutableArray.Create(0);
+        return errors.Count != 0 ? errors : ImmutableArray.Create(0);
     }
 
     [GenerateSerializer]
     internal sealed class State
     {
-        [Id(0)] public List<string> Users { get; set; } = new(new[] { "John", "Vincent" });
+        [Id(0)] public List<string> Users { get; set; } = new(["John", "Vincent"]);
     }
 
     [GeneratedRegex("^\\d\\d\\d\\d[A-Z]{2}$")]
