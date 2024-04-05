@@ -1,5 +1,5 @@
-# <img src="CSharp-Toolkit-Icon.png" alt="C# Toolkit" width="64px" /> Orleans.Results
-Concise, version-tolerant result pattern implementation for [Microsoft Orleans 7](https://github.com/dotnet/orleans/releases/tag/v7.0.0).
+﻿# <img src="CSharp-Toolkit-Icon.png" alt="C# Toolkit" width="64px" /> Orleans.Results
+Concise, version-tolerant result pattern implementation for [Microsoft Orleans 8](https://github.com/dotnet/orleans/releases/tag/v8.0.0).
 
 Included in [![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/Modern.CSharp.Templates?color=gold&label=NuGet:%20Modern.CSharp.Templates&style=plastic)](https://www.nuget.org/packages/Modern.CSharp.Templates) (see [below](#how-do-i-get-it))
 
@@ -74,10 +74,10 @@ async Task<Result<string>> GetString(int i) => i switch {
     1 => ErrorNr.NotFound,
     2 => (ErrorNr.NotFound, "Not found"),
     3 => new Error(ErrorNr.NotFound, "Not found"),
-    4 => new List<Error>(/*...*/)
+    4 => new Collection<Error>(/*...*/)
 };
 ```
-The implicit convertor only supports multiple errors with `List<Error>`; you can use the public constructor to specify multiple errors with any `IEnumerable<Error>`:
+The implicit convertor only supports multiple errors with `Collection<Error>`; you can use the public constructor to specify multiple errors with any `IEnumerable<Error>`:
 ```csharp
 async Task<Result<string>> GetString()
 {
@@ -88,7 +88,7 @@ async Task<Result<string>> GetString()
 }
 ```
 ## Validation errors
-The `TryAsValidationErrors` method is covenient for returning [RFC7807](https://tools.ietf.org/html/rfc7807) based problem detail responses. This method is designed to be used with [ValidationProblemDetails](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.validationproblemdetails?view=aspnetcore-7.0) (in MVC):<br>
+The `TryAsValidationErrors` method is covenient for returning [RFC7807](https://tools.ietf.org/html/rfc7807) based problem detail responses. This method is designed to be used with [ValidationProblemDetails](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.validationproblemdetails?view=aspnetcore-8.0) (in MVC):<br>
 ```csharp
 return result.TryAsValidationErrors(ErrorNr.ValidationError, out var validationErrors)
     ? ValidationProblem(new ValidationProblemDetails(validationErrors))
@@ -100,7 +100,7 @@ return result.TryAsValidationErrors(ErrorNr.ValidationError, out var validationE
         {                                   } r => throw r.UnhandledErrorException()
     };
 ```
-and with [Results.ValidationProblem](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.results.validationproblem?view=aspnetcore-7.0) (in minimal API's):
+and with [Results.ValidationProblem](https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.results.validationproblem?view=aspnetcore-8.0) (in minimal API's):
 ```csharp
 return result.TryAsValidationErrors(ErrorNr.ValidationError, out var validationErrors)
     ? Results.ValidationProblem(validationErrors)
@@ -129,7 +129,7 @@ public enum ErrorNr
 ```csharp
 public async Task<Result<string>> GetUsersAtAddress(string zip, string nr)
 {
-    List<Result.Error> errors = new();
+    Collection<Result.Error> errors = new();
 
     // First check for validation errors - don't perform the operation if there are any.
     if (!ZipRegex().IsMatch(zip)) errors.Add(Errors.InvalidZipCode(zip));
@@ -151,7 +151,7 @@ The performance of `Result<T>` can be optimized similarly by judiciously marking
 The [example in the repo](https://github.com/Applicita/Orleans.Results/tree/main/src/Example) demonstrates using Orleans.Results with both ASP.NET Core minimal API's and MVC:
 ![Orleans Results Example](Orleans-Results-Example.png)
 ## How do I get it?
-1) On the command line, ensure that the [template](https://github.com/Applicita/Modern.CSharp.Templates) is installed<br />(note that below is .NET 7 cli syntax; Orleans 7 requires .NET 7):
+1) On the command line, ensure that the [template](https://github.com/Applicita/Modern.CSharp.Templates) is installed<br />(note that below is .NET 8 cli syntax; Orleans 8 requires .NET 8):
     ```
     dotnet new install Modern.CSharp.Templates
     ```
@@ -176,9 +176,9 @@ The result pattern solves a common problem: it returns an object indicating succ
 
   Using return values also allows you to use [code analysis rule CA1806](https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1806) to alert you where you forgot to check the return value (you can use a *discard* `_ =` to express intent to ignore a return value)
 
-### Orleans 7 introduces version-tolerant, high-performance serialization
+### Orleans 8 supports version-tolerant, high-performance serialization
 However existing Result pattern implementations like [FluentResults](https://github.com/altmann/FluentResults) are not designed for serialization, let alone Orleans serialization. Orleans requires that you annotate your result types - including all types contained within - with the Orleans `[GenerateSerializer]` and `[Id]` attributes, or alternatively that you write additional code to serialize external types.
 
 This means that result objects that can contain contain arbitrary objects as part of the errors (like exceptions) require an open-ended amount of work. Orleans.Results avoids this work by defining an error to be an `enum` nr plus a `string` message.
 
-Orleans.Results adheres to the Orleans 7 serialization guidelines, which enables compatibility with future changes in the result object serialization.
+Orleans.Results adheres to the Orleans 8 serialization guidelines, which enables compatibility with future changes in the result object serialization.

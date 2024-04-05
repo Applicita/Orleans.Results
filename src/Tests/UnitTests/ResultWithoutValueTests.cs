@@ -1,14 +1,13 @@
 ﻿using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using Example;
 
 namespace Orleans.Results.Tests.UnitTests;
 
 [Collection(TestCluster.Name)]
-public class ResultWithoutValueTests
+public class ResultWithoutValueTests(ClusterFixture fixture)
 {
-    readonly TestingHost.TestCluster cluster;
-
-    public ResultWithoutValueTests(ClusterFixture fixture) => cluster = fixture.Cluster;
+    readonly TestingHost.TestCluster cluster = fixture.Cluster;
 
     ITenant Tenant => cluster.GrainFactory.GetGrain<ITenant>("");
 
@@ -87,7 +86,7 @@ public class ResultWithoutValueTests
         Result.Error error1 = new(ErrorNr.UserNotFound, "Error message 1");
         var error2 = error1 with { Nr = ErrorNr.NoUsersAtAddress, Message = "Error message 2" };
 
-        List<Result.Error> errors = new(new Result.Error[] { error1, error2 });
+        Collection<Result.Error> errors = new([error1, error2]);
         Result result = errors;
 
         Assert.Equal(errors, result.Errors);

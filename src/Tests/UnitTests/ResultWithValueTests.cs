@@ -1,14 +1,13 @@
 ﻿using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using Example;
 
 namespace Orleans.Results.Tests.UnitTests;
 
 [Collection(TestCluster.Name)]
-public class ResultWithValueTests
+public class ResultWithValueTests(ClusterFixture fixture)
 {
-    readonly TestingHost.TestCluster cluster;
-
-    public ResultWithValueTests(ClusterFixture fixture) => cluster = fixture.Cluster;
+    readonly TestingHost.TestCluster cluster = fixture.Cluster;
 
     ITenant Tenant => cluster.GrainFactory.GetGrain<ITenant>("");
 
@@ -176,7 +175,7 @@ public class ResultWithValueTests
         var error2 = error1 with { Nr = ErrorNr.NoUsersAtAddress, Message = "Error message 2" };
         // With is used to get coverage of the generated set_Code and set_Message
 
-        List<Result.Error> errors = new(new Result.Error[] { error1, error2 });
+        Collection<Result.Error> errors = new([error1, error2]);
         Result<bool> result = errors;
 
         Assert.Equal(errors, result.Errors);
